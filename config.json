@@ -1,0 +1,8 @@
+{
+    "discord":{
+        "defaultembed":{
+            "color":"#ffac44",
+            "footer":"ZML_bot-core"
+        }
+    }
+}

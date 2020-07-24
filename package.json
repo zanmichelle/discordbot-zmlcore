@@ -1,0 +1,25 @@
+{
+  "name": "ZML_bot-core",
+  "version": "1.0.0",
+  "description": "This a discord bot core for discord.js v12.",
+  "main": "./src/core.js",
+  "scripts": {
+    "gen": "node ./src/genCommand.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon ./src/core.js",
+    "start": "node ./src/core.js"
+  },
+  "keywords": [],
+  "author": "Zan Michelle Lipovsek#2142",
+  "license": "ISC",
+  "dependencies": {
+    "better-sqlite3": "^7.1.0",
+    "canvas": "^2.6.1",
+    "discord.js": "^12.2.0",
+    "dotenv": "^8.2.0",
+    "mathjs": "^7.1.0",
+    "moment": "^2.27.0",
+    "ms": "^2.1.2",
+    "slot-machine": "^2.1.0"
+  }
+}
