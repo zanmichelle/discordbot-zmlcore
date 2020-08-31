@@ -5,7 +5,7 @@ const ms = require('ms');
 
 module.exports = class SlotsCommand extends BaseCommand {
     constructor() {
-        super('slots', 'economy', ['aliases'],'Slot machine is here, palce bets.', [], "slots <bet>", ['SEND_MESSAGES']);
+        super('slots', 'economy', ['aliases'],'Slot machine is here, palce bets.', [], "slots <bet>", ['SEND_MESSAGES'], 300);
     }
 
     async run(client, message, args) {
@@ -24,14 +24,12 @@ module.exports = class SlotsCommand extends BaseCommand {
         try{
             if(!args[0] || isNaN(args[0])) return message.channel.send({embed: new MessageEmbed().setDescription(`Provide a number for a bet.`)}).then(m=>m.delete({timeout: 5000}));
             let bet = parseInt(args[0]);
-            let data = await client.economy.prepare(`SELECT * FROM guild${message.guild.id} WHERE member=?`).get(message.author.id);
-            if(!data){
-                let items = {}
-                await client.economy.prepare(`INSERT INTO guild${message.guild.id} VALUES(?,?,?,?)`).run(message.author.id, 1000, 0, JSON.stringify(items));
-            }
-            let { money } = await client.economy.prepare(`SELECT * FROM guild${message.guild.id} WHERE member=?`).get(message.author.id);
+            let data = await client.database.prepare(`SELECT * FROM economy WHERE guild_id=? AND member=?`).get(message.guild.id, message.author.id);
+            if(!data) await client.database.prepare(`INSERT INTO economy(guild_id,member) VALUES(?,?)`).run(message.guild.id, message.author.id);
+
+            let { money } = client.database.prepare(`SELECT * FROM economy WHERE guild_id=? AND member=?`).get(message.guild.id, message.author.id);
             if(bet > money) return message.channel.send(`You don't have enough money, max amount: $${money}.`);
-            
+            if(this.cooldown !== 0 && this.cooldown) client.cooldowns.set(`${message.guild.id}_${message.author.id}-${this.name}`, new client.timer(function() {client.cooldowns.delete(`${message.guild.id}_${message.author.id}-${this.name}`)}, this.cooldown*1000));
             msg = await message.channel.send(embed);
             await slotMachine(bet);
         }catch(err){console.log('[ERROR] - at SLOTS', err.stack)}
@@ -55,7 +53,7 @@ module.exports = class SlotsCommand extends BaseCommand {
                 }
                 msg.edit(embed.setDescription(game.join("\n")));
             }
-            results(names[1],bet)
+            await results(names[1],bet)
         }
         function results(a,amount){
             let e = a
@@ -65,36 +63,48 @@ module.exports = class SlotsCommand extends BaseCommand {
             msg.edit(embed.setDescription(slots[e[0]].emoji+slots[e[1]].emoji+slots[e[2]].emoji))
             if(three){
                 if(e.includes('jackpot')){
-                    let newMoney = Math.floor(amount * 10);
-                    let embed = new MessageEmbed().setTitle(`💰**JACKPOT**💰`)
-                        .setDescription(`<@${message.author.id}> **GG** you won \`$${newMoney}\`!`)
-                    message.channel.send(embed)
-                    return updateMoney(newMoney,amount);
+                    setTimeout(() => {
+                        let newMoney = Math.floor(amount * 10);
+                        let embed = new MessageEmbed().setTitle(`💰**JACKPOT**💰`)
+                            .setDescription(`<@${message.author.id}> **GG** you won \`$${newMoney}\`!`)
+                        message.channel.send(embed)
+                        return updateMoney(newMoney,amount);
+                    }, 1800);
+                    
                 }
                 else{
-                    let newMoney = Math.floor(amount * (slots[e[0]].points))
-                    let embed = new MessageEmbed().setDescription(`<@${message.author.id}> **GG** you won \`$${newMoney}\`!`)
-                    message.channel.send(embed);
-                    return updateMoney(newMoney,amount);
+                    setTimeout(() => {
+                        let newMoney = Math.floor(amount * (slots[e[0]].points))
+                        let embed = new MessageEmbed().setDescription(`<@${message.author.id}> **GG** you won \`$${newMoney}\`!`)
+                        message.channel.send(embed);
+                        return updateMoney(newMoney,amount);
+                    }, 1800);
+                    
                 }
                 
             }
             else if(two){
-                let newMoney = Math.floor(amount * ((slots[e[0]].points + slots[e[1]].points + slots[e[2]].points)/2))
-                let embed = new MessageEmbed().setDescription(`**<@${message.author.id}> you won \`$${newMoney}\`!**`)
-                message.channel.send(embed)
-                return updateMoney(newMoney,amount);
+                setTimeout(() => {
+                    let newMoney = Math.floor(amount * ((slots[e[0]].points + slots[e[1]].points + slots[e[2]].points)/2))
+                    let embed = new MessageEmbed().setDescription(`**<@${message.author.id}> you won \`$${newMoney}\`!**`)
+                    message.channel.send(embed)
+                    return updateMoney(newMoney,amount);
+                }, 1800);
+                
             }
             else{
-                let embed = new MessageEmbed().setDescription(`🥃 You lost..`)
-                message.channel.send(embed)
-                return updateMoney(0,amount);
+                setTimeout(() => {
+                    let embed = new MessageEmbed().setDescription(`🥃 You lost..`)
+                    message.channel.send(embed)
+                    return updateMoney(0,amount);
+                }, 1800);
+                
             }
         }
         async function updateMoney(amount,bet){
-            let {money} = await client.economy.prepare(`SELECT money FROM guild${message.guild.id} WHERE member=?`).get(message.author.id);
+            let { money } = client.database.prepare(`SELECT * FROM economy WHERE guild_id=? AND member=?`).get(message.guild.id, message.author.id);
             let n = Math.floor(money - bet + amount)
-            await client.economy.prepare(`UPDATE guild${message.guild.id} SET money=? WHERE member=?`).run(parseInt(n),message.author.id)
+            await client.database.prepare(`UPDATE economy SET money=? WHERE guild_id=? AND member=?`).run(parseInt(n),message.guild.id,message.author.id)
         }
     }
 }

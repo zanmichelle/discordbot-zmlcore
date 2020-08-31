@@ -5,7 +5,7 @@ const ms = require('ms');
 
 module.exports = class RobCommand extends BaseCommand {
     constructor() {
-        super('rob', 'economy', [],'Rob someone.', [], "rob <@member>", ['SEND_MESSAGES']);
+        super('rob', 'economy', [],'Rob someone.', [], "rob <@member>", ['SEND_MESSAGES'], 7200);
     }
 
     async run(client, message, args) {

@@ -5,19 +5,17 @@ const ms = require('ms');
 
 module.exports = class BalanceCommand extends BaseCommand {
   constructor() {
-    super('balance', 'economy', ['bal'],'Shows users balance.', [], "balance", ['SEND_MESSAGES']);
+    super('balance', 'economy', ['bal'],'Shows users balance.', [], "balance", ['SEND_MESSAGES'], 1);
   }
 
   async run(client, message, args) {
     try{
       // check if guild is in the db.
-      let data = await client.economy.prepare(`SELECT * FROM guild${message.guild.id} WHERE member=?`).get(message.author.id);
-      if(!data){
-        let items = {}
-        await client.economy.prepare(`INSERT INTO guild${message.guild.id} VALUES(?,?,?,?)`).run(message.author.id, 1000, 0, JSON.stringify(items));
-      }
-      let person = await client.economy.prepare(`SELECT * FROM guild${message.guild.id} WHERE member=?`).get(message.author.id)
-      // console.log(person.money,person.bank,JSON.parse(person.items))
+      let data = await client.database.prepare(`SELECT * FROM economy WHERE guild_id=? AND member=?`).get(message.guild.id, message.author.id);
+      if(!data) await client.database.prepare(`INSERT INTO economy(guild_id,member) VALUES(?,?)`).run(message.guild.id, message.author.id);
+      let person = await client.database.prepare(`SELECT * FROM economy WHERE guild_id=? AND member=?`).get(message.guild.id, message.author.id);
+
+      // make embed 
       let embed = new MessageEmbed().setTitle(`Balance:`)
       .setDescription(`**💵Money:** $${person.money}\n**🏦Bank:** $${person.bank}`)
       .setThumbnail(message.author.avatarURL())

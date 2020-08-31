@@ -4,10 +4,12 @@ const {MessageEmbed} = require('discord.js');
 
 module.exports = class TemplateCommand extends BaseCommand {
   constructor() {
-    super('template', 'category', ['aliases'],'This is command description.', ['ADMINISTATOR','SOME_OTHER_PERM'], "template",['REQUIRED_PERMS']);
+    super('command', 'moderation', ['cmd'],'Create custom commands.', ['ADMINISTRATOR'], "command <add/remove> <command_nam> <output>",['SEND_MESSAGES']);
   }
 
   async run(client, message, args) {
-    try{}catch(err){console.log(`[ERROR] - at command`, err.stack)}
+    try{
+
+    }catch(err){console.log(`[ERROR] - at command`, err.stack)}
   }
 }

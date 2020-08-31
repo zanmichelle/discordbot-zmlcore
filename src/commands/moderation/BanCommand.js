@@ -17,17 +17,16 @@ module.exports = class BanCommand extends BaseCommand {
       let {log} = await db.prepare(`SELECT log FROM guilds WHERE guild_id = ?`).get(message.guild.id);
 
       let logembed = new MessageEmbed().setTitle(`🔨 Ban HAMMER has spoken!`).setTimestamp(new Date())
-      .setDescription(`**Member:** <@${person.id}> (${args[1]? args.slice(1).join(" ") : 'No reason.'})\n**Moderator:** <@${message.author.id}>\n**Banned at:** ${ms(new Date().toString())}`)
+      .setDescription(`**Member:** <@${person.id}> (${args[1]? args.slice(1).join(" ") : 'No reason.'})\n**Moderator:** <@${message.author.id}>\n**Banned at:** ${ms(Date.now())}`)
       .setThumbnail(client.users.cache.get(person.id).avatarURL());
       let embed = new MessageEmbed().setDescription(`**☑️ <@${person.id}> was succesfully banned!**`);
 
       message.guild.members.ban(person.id).then(async()=>{
         message.channel.send(embed);
-        if(log){
-          if(message.guild.channels.cache.get(stmt)) return message.guild.channels.cache.get(log).send(logembed);
-        }
       }).catch(e=> message.channel.send(`✖️ Couldn't ban this member!`));
-
+      if(log){
+          if(message.guild.channels.cache.get(log)) return message.guild.channels.cache.get(log).send(logembed);
+        }
     }catch(err){console.log(`[ERROR] - at BAN`, err.stack)}
   }
 }

@@ -10,6 +10,6 @@ module.exports = class CreateroleCommand extends BaseCommand {
   async run(client, message, args) {
     try{
 
-    }catch(err){console.log(`[ERROR] - at CREATEROLE`, err.stack)}
+    }catch(err){console.log(`[ERROR] - at CREATEROLE\n`, err.stack)}
   }
 }

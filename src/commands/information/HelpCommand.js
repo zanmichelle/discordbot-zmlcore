@@ -1,9 +1,10 @@
 const BaseCommand = require('../../utils/structures/BaseCommand');
 const {MessageEmbed} = require("discord.js")
-const math = require("mathjs")
+const math = require("mathjs");
+const { help } = require('mathjs');
 module.exports = class HelpCommand extends BaseCommand {
   constructor() {
-    super('help', 'information', ['h'],'This command shows help menu.', ['SEND_MESSAGES'],"help [page | command]",["SEND_MESSAGES"]);
+    super('help', 'information', ['h'],'This command shows help menu.', [],"help [page | command]",["SEND_MESSAGES","EMBED_LINKS"]);
   }
 
   async run(client, message, args) {
@@ -16,15 +17,32 @@ module.exports = class HelpCommand extends BaseCommand {
         .setTimestamp(new Date());
         return message.channel.send(embed)
       }else{
-        let page = isNaN(args[0]) ? 1 : parseInt(args[0])
-        let data = []
-        let check = []
-        await client.commands.forEach(command=>{
-          if(check.includes(command.name)) return
-          check.push(command.name)
-          data.push(`**\`${client.prefix}${client.commands.get(command.name).usage}\`** - ${client.commands.get(command.name).description}`)
-        });
-        message.channel.send(convertToPage(data,page))
+        delete client.help['']
+        let help_str = '**Amolid commands:**\n\n'
+        for(let i in client.help) {
+          let cache = [];
+          help_str+=` • ${i.charAt(0).toUpperCase()+i.slice(1)}:\n`
+          client.help[i].forEach(c => {
+            cache.push(`\`${c}\``);
+          });
+          help_str+=`${cache.join(", ")}\n`
+        }
+        help_str+='\nFor more informations use `help <command>` to get detailed command information.\nJoin our support server by using support command.';
+
+        message.channel.send(help_str);
+
+
+        // help menu option 2:
+        // const page = isNaN(args[0]) ? 1 : parseInt(args[0])
+        // const data = []
+        // const check = []
+        // const prefix = await client.settings.get(message.guild.id).prefix || '-';
+        // await client.commands.forEach(command=>{
+        //   if(check.includes(command.name)) return
+        //   check.push(command.name)
+        //   data.push(`**\`${prefix}${client.commands.get(command.name).usage}\`** - ${client.commands.get(command.name).description}`)
+        // });
+        // message.channel.send(convertToPage(data,page))
         
       }
     }catch(error){

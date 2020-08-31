@@ -13,6 +13,7 @@
   "author": "Zan Michelle Lipovsek#2142",
   "license": "ISC",
   "dependencies": {
+    "@rauschma/stringio": "^1.4.0",
     "better-sqlite3": "^7.1.0",
     "canvas": "^2.6.1",
     "discord.js": "^12.2.0",
@@ -20,6 +21,9 @@
     "mathjs": "^7.1.0",
     "moment": "^2.27.0",
     "ms": "^2.1.2",
+    "node-cron": "^2.0.3",
+    "pretty-ms": "^7.0.0",
+    "request": "^2.88.2",
     "slot-machine": "^2.1.0"
   }
 }

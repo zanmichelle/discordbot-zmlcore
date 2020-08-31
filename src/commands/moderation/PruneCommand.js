@@ -13,8 +13,8 @@ module.exports = class PruneCommand extends BaseCommand {
       if(amount > 1000) return message.channel.send(`Prune limit is \`1000\`.`)
       message.delete()
       let messagesToDelete = await getMessages(message.channel, amount);
-      await message.channel.send({embed: new Discord.MessageEmbed().setDescription(`☑️ **Deleted ${messagesToDelete.length} ${messagesToDelete.length != 1 ? 'messages.' : "message."}**`)})
-      
+      messagesToDelete == null ? message.channel.send(`There was an error deleting messages.`) : message.channel.send(`☑️ **Deleted ${messagesToDelete.length} ${messagesToDelete.length != 1 ? 'messages.' : "message."}**`)
+    
     }catch(err){console.log(`[ERROR] - at PRUNE`, err.stack)}
     async function getMessages(channel, limit) {
       try{
@@ -22,6 +22,7 @@ module.exports = class PruneCommand extends BaseCommand {
         let last_id;
         let dec = limit
         while (true) {
+          try {
             const options = { limit: dec > 100 ? 99 : dec };
             dec = dec-options.limit
             if (last_id) {
@@ -36,8 +37,11 @@ module.exports = class PruneCommand extends BaseCommand {
             if (dec == 0) {
                 break;
             }
+          } catch (error) {
+            message.channel.send(`Message older than 14 days can't be deleted!`)
+          }
         }
-        return all_messages;
+        return all_messages.length ? all_messages : null;
       }catch(err){console.log(`[ERROR] - at PRUNE function getMessages()\n`,err.stack)}
       
   }

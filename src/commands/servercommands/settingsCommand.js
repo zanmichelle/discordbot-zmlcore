@@ -4,51 +4,66 @@ const {db} = require("../../utils/structures/BaseDB");
 
 module.exports = class SettingsCommand extends BaseCommand {
   constructor() {
-    super('settings', 'servercommands', ['set','config','configure'],'Use this command to configure settings for your server.', ['ADMINISTATOR','GUILD_OWNER'], "settings <module> <option>", ['SEND_MESSAGES']);
+    super('settings', 'servercommands', ['set','config','configure'],'Use this command to configure settings for your server.', ['ADMINISTRATOR','MANAGE_GUILD'], "settings <module> <option>", ['SEND_MESSAGES']);
   }
 
   async run(client, message, args) {
     try{ 
       let insert = ''
-      let embed = new Discord.MessageEmbed()
+      let embed = new Discord.MessageEmbed();
+      let data = {}
+      let temp = await client.settings.get(message.guild.id);
+      // console.log(temp)
       // check if user has permission to run the command.
-      if(!message.member.hasPermission("ADMINISTRATOR") || message.author.id !== message.guild.owner.id) {let msg = await message.reply(`You need \`ADMINISTRATOR\` permission or you have to be guild owner. `); return msg.delete({timeout: 4000});}
+      if(!message.member.hasPermission("ADMINISTRATOR") && message.author.id !== message.guild.owner.id) {let msg = await message.reply(`You need \`ADMINISTRATOR\` permission or you have to be guild owner. `); return msg.delete({timeout: 4000});}
       if(args[0]){
-        let config = await db.prepare(`SELECT * FROM guilds WHERE guild_id = ?`).get(message.guild.id);
-        if(config[args[0].toLowerCase()] && args.length < 1) {
+        if(temp[args[0].toLowerCase()] && args.length > 1) {
 
           switch (args[0].toLowerCase()) {
             case 'prefix':
-              let newPrefix = args[1]
-              if(config.prefix == newPrefix) return message.channel.send(`**Prefix is already set to \`${newPrefix}\`.**`)
-              insert = db.prepare(`UPDATE guilds SET prefix = ? WHERE guild_id = ?`)
-              insert.run(args[1],message.guild.id);
+              let newPrefix = args.slice(1).join(" ");
+              if(temp.prefix == newPrefix) return message.channel.send(`**Prefix is already set to \`${newPrefix}\`.**`)
+              db.prepare(`UPDATE guilds SET prefix = ? WHERE guild_id = ?`).run(args[1],message.guild.id);
+              temp["prefix"] = newPrefix;
+              client.settings.set(message.guild.id,temp);
               message.channel.send({embed: new Discord.MessageEmbed().setDescription(`☑️ Set prefix to **${newPrefix}**`)})
-
             break;
 
             case 'welcome':
               let welcome = message.guild.channels.cache.get(args[1].replace(/[@!#&<>]+/g,"")) || message.mentions.channels.first()
               if(!welcome) return message.channel.send(`Second parameter must be an actually channel.`).then(m=>m.delete({timeout:5000}));
-              insert = db.prepare('UPDATE guilds SET welcome = ? WHERE guild_id = ?')
-              insert.run(welcome.id, message.guild.id);
+              db.prepare('UPDATE guilds SET welcome = ? WHERE guild_id = ?').run(welcome.id, message.guild.id);
+              temp["welcome"] = welcome.id
+              client.settings.set(message.guild.id,temp);
               message.channel.send(embed.setDescription(`☑️ Successfully updated **welcome** channel to ${welcome}!`))
             break;
 
             case 'log':
               let log = message.guild.channels.cache.get(args[1].replace(/[@!#&<>]+/g,"")) || message.mentions.channels.first();
               if(!log) return message.channel.send(`Second parameter must be an actually channel.`).then(m=>m.delete({timeout:5000}));
-              insert = db.prepare('UPDATE guilds SET log = ? WHERE guild_id = ?')
-              insert.run(log.id, message.guild.id);
+              db.prepare('UPDATE guilds SET log = ? WHERE guild_id = ?').run(log.id, message.guild.id);
+              temp["log"] = log.id;
+              client.settings.set(message.guild.id,temp);
               message.channel.send(embed.setDescription(`☑️ Successfully updated **log** channel to ${log}!`))
             break;
             
             case 'join_msg':
               let join_msg = args.slice(1).join(" ");
-              insert = db.prepare('UPDATE guilds set join_msg = ? WHERE guild_id = ?');
-              insert.run(join_msg, message.guild.id);
-              message.channel.send(embed.setDescription(`☑️ Successfully updated **join_msg** channel to \`${join_msg}\`!`))
-          
+              if(!join_msg) return message.channel.send(`Missing message.`)
+              db.prepare('UPDATE guilds set join_msg = ? WHERE guild_id = ?').run(join_msg, message.guild.id);
+              temp["join_msg"] = join_msg
+              client.settings.set(message.guild.id,temp);
+              message.channel.send(embed.setDescription(`☑️ Successfully updated **join_msg** channel to \`${join_msg}\`!`));
+            break;
+
+            case 'join_role':
+              let role = message.guild.roles.cache.get(args[1].replace(/[@!#&<>]+/g,"")) || message.mentions.roles.first();
+              if(!role) return message.channel.send(`Invalid role metion or ID.`);
+              db.prepare('UPDATE guilds set join_role = ? WHERE guild_id = ?').run(role.id, message.guild.id);
+              temp["join_role"] = role.id
+              client.settings.set(message.guild.id,temp);
+              message.channel.send(embed.setDescription(`☑️ Successfully updated **join_role** role to \`${role}\`!`));
+            break;
             default:
               return getSettings();
             break;

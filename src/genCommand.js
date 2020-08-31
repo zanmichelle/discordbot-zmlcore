@@ -25,7 +25,7 @@ const ms = require('ms');
 
 module.exports = class ${name.charAt(0).toUpperCase()+name.slice(1)}Command extends BaseCommand {
     constructor() {
-        super('${name.toLowerCase()}', '${category.toLowerCase()}', [],'This is command description.', [], "${name.toLowerCase()}", ['REQUIRED_PERMS']);
+        super('${name.toLowerCase()}', '${category.toLowerCase()}', [],'This is command description.', [], "${name.toLowerCase()}", ['REQUIRED_PERMS'], 'cooldown(optional)');
     }
 
     async run(client, message, args) {

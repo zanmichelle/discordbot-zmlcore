@@ -5,7 +5,7 @@ const ms = require('ms');
 
 module.exports = class WorkCommand extends BaseCommand {
     constructor() {
-        super('work', 'economy', [],'You will earn some extra money if you work', [], 'work', ['SEND_MESSAGES']);
+        super('work', 'economy', [],'You will earn some extra money if you work', [], 'work', ['SEND_MESSAGES'], 18000);
     }
 
     async run(client, message, args) {

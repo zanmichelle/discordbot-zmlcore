@@ -11,6 +11,6 @@ module.exports = class EightballCommand extends BaseCommand {
     async run(client, message, args) {
         try{
             
-        }catch(err){console.log('[ERROR] - at 8BALL', err.stack)}
+        }catch(err){console.log('[ERROR] - at 8BALL\n', err.stack)}
     }
 }
